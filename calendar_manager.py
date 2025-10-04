@@ -1,5 +1,5 @@
 import pickle
-import os.path
+import sys, os
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -7,7 +7,7 @@ from google.auth.exceptions import RefreshError
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from definitions import LessonStatus
+from definitions import LessonStatus, get_base_path
 
 # If modifying these SCOPES, delete the token.pickle file.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -21,8 +21,15 @@ class CalendarManager():
 
 
     def start(self):
-        credentials_path = "credentials.json"
-        token_path = "token.pickle"
+        base_path = get_base_path()
+        credentials_path = os.path.join(base_path, "credentials.json")
+        token_path = os.path.join(base_path, "token.pickle")
+
+        # Check if credentials.json exists
+        if not os.path.exists(credentials_path):
+            print("Error: Missing 'credentials.json'.")
+            print("Please place your Google API credentials file next to the program.")
+            sys.exit(1)
 
         # Load credentials if already saved
         if os.path.exists(token_path):

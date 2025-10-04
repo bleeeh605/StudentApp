@@ -1,6 +1,7 @@
 import sqlite3
+import os
 
-from definitions import Student
+from definitions import Student, get_base_path
 
 class DatabaseManager:
 
@@ -9,7 +10,8 @@ class DatabaseManager:
         self.cursor = None
 
     def start(self) -> None:
-        self.connection = sqlite3.connect("student_app.db")
+        data_base_path = os.path.join(get_base_path(), "student_app.db")
+        self.connection = sqlite3.connect(data_base_path)
         self.cursor = self.connection.cursor()
 
     def stop(self) -> None:

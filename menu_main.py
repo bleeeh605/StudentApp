@@ -1,13 +1,12 @@
-from menu import Menu, MenuItem, create_lazy_menu_callback
-from menu_add_or_edit_student import MenuAddOrEditStudent
-from menu_remove_student import MenuRemoveStudent
-from menu_create_lesson import MenuCreateLesson
-import curses
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from menu import Menu, MenuItem, create_lazy_menu_callback
 from definitions import Student
 from menu_students_overview import MenuStudentsOverview
+from menu_add_or_edit_student import MenuAddOrEditStudent
+from menu_remove_student import MenuRemoveStudent
+from menu_create_lesson import MenuCreateLesson
 
 class MenuMain(Menu):
 
@@ -35,9 +34,10 @@ class MenuMain(Menu):
             events = self.calendar.get_events_in_selected_period(now, end_of_two_weeks_from_now)
             if not events:
                 event_string = f"No events found in the selected period {now.isoformat()} -> {end_of_two_weeks_from_now}"
-                x = w//2 - len(event_string)//2        # Calculate x so text is centered horizontally
-                y = h//2 - 1//2                           # Calculate y so the whole menu is vertically centered
-                self.stdscr.addstr(y, x, event_string)
+                x = w//2 - round(len(event_string)//2)        # Calculate x so text is centered horizontally
+                y = h//2 - 1                                  # Calculate y so the whole menu is vertically centered
+                # TODO: Find out why this causes a crash in the .exe variant
+                self.stdscr.addstr(0, 0, event_string)
             else:
                 for index, event in enumerate(events):
                     event_begin = event["start"].get("dateTime", event["start"].get("date"))
