@@ -1,7 +1,7 @@
 from enum import Enum
 import os, sys
 
-version = "1.0.0"
+version = "1.0.2"
 
 class Student():
     def __init__(self, name, lesson_price=35, advance_payment=0, lesson_in_this_week=None, lessons=None):

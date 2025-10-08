@@ -14,12 +14,12 @@ class MenuStudentsOverview(Menu):
         super().__init__(self.items, stdscr)
 
     def refresh_items(self):
-        self.items = []
+        self.items = [] # Clear previous items and append updated content
         student_rows = self.data_base.get_students_info()
         for row in student_rows:
             id, name, lesson_price, advance_payment = row
             student = Student(name, lesson_price, advance_payment)
-            self.items.append(MenuItem(f"{name} {lesson_price} {advance_payment}", create_lazy_menu_callback(MenuAddOrEditStudent,
+            self.items.append(MenuItem(f"{name} | {lesson_price} | {advance_payment}", create_lazy_menu_callback(MenuAddOrEditStudent,
                                                                                                              self.stdscr,
                                                                                                              self.data_base,
                                                                                                              action="edit",
@@ -59,6 +59,30 @@ class MenuStudentsOverview(Menu):
 
             # Redraw menu with updated selection
             self.print_menu(current_row)
+
+    def print_menu(self, selected_row_idx):
+        """
+        Prints the menu on screen, highlighting the selected row.
+        """
+        self.stdscr.clear()  # Clear the screen before redrawing
+        h, w = self.stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
+
+        longest_label = max([item.label for item in self.items], key=len)
+        x = w//2 - len(longest_label)//2  # Calculate x so text is centered horizontally
+        y = h//2 - len(self.items)//2 # Calculate y so the whole menu is vertically centered
+        self.stdscr.addstr(y, x, "Name | Lesson price (€) | Payment in advance (€)") # print column names as 'title'
+
+        # Loop through each menu item and print it
+        for idx, item in enumerate(self.items):
+            next_y = y + idx + 1 # + 1 because the 'title' is the first row
+            if idx == selected_row_idx: # Highlight the currently selected row (inverted colors)
+                self.stdscr.attron(curses.color_pair(1))  # Turn on color pair 1
+                self.stdscr.addstr(next_y, x, str(item.label))  # Print the highlighted row
+                self.stdscr.attroff(curses.color_pair(1))  # Turn off highlighting
+            else: # Print normal (non-highlighted) row
+                self.stdscr.addstr(next_y, x, str(item.label))
+
+        self.stdscr.refresh()  # Refresh the screen so changes are visible
 
     def set_refresh_needed_true(self):
         self._needs_refresh = True

@@ -12,7 +12,7 @@ def main(stdscr):
     calendar = CalendarManager()
     calendar.start()
 
-    advance_payment_manager = AdvancePaymentManager(data_base, calendar)
+    advance_payment_manager = AdvancePaymentManager(stdscr, data_base, calendar)
     advance_payment_manager.do_routine()
 
     curses.curs_set(0)

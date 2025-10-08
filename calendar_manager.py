@@ -6,6 +6,7 @@ from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+import socket
 
 from definitions import LessonStatus, get_base_path
 
@@ -85,7 +86,8 @@ class CalendarManager():
     
     def create_event(self, calendar_event):
         start_time = f"{calendar_event.date}T{calendar_event.start_hour}:00"
-        end_time = (datetime.fromisoformat(start_time) + timedelta(hours=calendar_event.duration)).isoformat()
+        duration_in_hours = calendar_event.duration // 60
+        end_time = (datetime.fromisoformat(start_time) + timedelta(hours=duration_in_hours)).isoformat()
         event = {
             "summary": calendar_event.name,
             "start": {"dateTime": start_time, 'timeZone': str(self.time_zone)},
@@ -170,10 +172,28 @@ class CalendarEvent:
                 name,
                 date=datetime.today().strftime("%Y-%m-%d"), 
                 start_hour=datetime.now(ZoneInfo("Europe/Berlin")).strftime("%H:%M"),
-                duration=0.75,
+                duration=45,
                 status=str(LessonStatus.PENDING.value)):
         self.name = name
         self.date = date
         self.start_hour = start_hour
         self.duration = duration
         self.status = status
+
+class ConnectionChecker():
+
+    @staticmethod
+    def is_internet_connection_present() -> bool:
+        """
+        Check internet connection by trying to reach a DNS server (Google 8.8.8.8)
+        Returns True if connected, False otherwise.
+        """
+        timeout = 3 # in seconds
+        host = "8.8.8.8"
+        port = 53
+        try:
+            socket.setdefaulttimeout(timeout)
+            socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+            return True
+        except OSError:
+            return False

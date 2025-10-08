@@ -18,8 +18,8 @@ class MenuAddOrEditStudent(Menu):
 
     def refresh_items(self):
         self.items = [MenuItem(f"Name: {self.student.name}", self.create_enter_student_parameter_callback("name")),
-                      MenuItem(f"Lesson price: {self.student.lesson_price}", self.create_enter_student_parameter_callback("lesson price")),
-                      MenuItem(f"Payment in advance: {self.student.advance_payment}", self.create_enter_student_parameter_callback("payment in advance"))]
+                      MenuItem(f"Lesson price: {self.student.lesson_price} (€)", self.create_enter_student_parameter_callback("lesson price")),
+                      MenuItem(f"Payment in advance: {self.student.advance_payment} (€)", self.create_enter_student_parameter_callback("payment in advance"))]
         if self.action == "add":
             self.items.append(MenuItem("Confirm", self.create_confirm_add_student_callback()))
         elif self.action == "edit":
@@ -36,7 +36,14 @@ class MenuAddOrEditStudent(Menu):
             while True:
                 self.stdscr.clear()
                 self.stdscr.addstr(0, 0, f"Type the {option} of the student and press Enter. Press ESC to go back.")
-                self.stdscr.addstr(2, 0, "Current input: " + input_str)
+                format_string = ""
+                if option == "name":
+                    format_string = "Format: [Text] Max. 25 characters."
+                elif option == "lesson price":
+                    format_string = "Format: [Number] as euro."
+                elif option == "payment in advance":
+                    format_string = "Format: [Number] as euro."
+                self.stdscr.addstr(2, 0, f"{format_string} Current input: " + input_str)
 
                 key = self.stdscr.getch()
                 if key == 27:  # ESC to exit
@@ -44,13 +51,16 @@ class MenuAddOrEditStudent(Menu):
                 elif key in (curses.KEY_ENTER, 10, 13):  # Enter key
                     if input_str.strip():
                         if option == "name":
-                            self.student.name = input_str.strip()
+                            if 0 < len(input_str.strip()) < 25:
+                                self.student.name = input_str.strip()
                         elif option == "lesson price":
                             if input_str.strip().isdigit():
-                                self.student.lesson_price = int(input_str.strip())
+                                if 0 <= int(input_str.strip()):
+                                    self.student.lesson_price = int(input_str.strip())
                         elif option == "payment in advance":
                             if input_str.strip().isdigit():
-                                self.student.advance_payment = int(input_str.strip())
+                                if 0 <= int(input_str.strip()):
+                                    self.student.advance_payment = int(input_str.strip())
                         self.set_needs_refresh_true()
                         break # Back to previous menu
                 elif key == curses.KEY_BACKSPACE or key == 127:
@@ -62,12 +72,13 @@ class MenuAddOrEditStudent(Menu):
     def create_confirm_add_student_callback(self):
         def create_confirm_add_student():
             self.data_base.add_student(self.student)
+            self.student = Student("---") # Reset the student info for next time when entering the menu
             return "BACK"  # Return to previous menu
         return create_confirm_add_student
     
     def create_confirm_edit_student_callback(self):
         def create_confirm_edit_student_callback():
-            self.data_base.edit_student(self.student_id, lesson_price=self.student.lesson_price, payment_in_advance=self.student.advance_payment)
+            self.data_base.edit_student(self.student_id, student=self.student)
             self.refresh_callback()
             return "BACK"  # Return to previous menu
         return create_confirm_edit_student_callback

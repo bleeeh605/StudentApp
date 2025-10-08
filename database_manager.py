@@ -18,29 +18,23 @@ class DatabaseManager:
         self.connection.close()
 
     def add_student(self, student: Student) -> None:
-        self.cursor.execute(f"INSERT INTO students (name, payment, payment_in_advance)"
-                            f" VALUES ('{student.name}', {student.lesson_price}, {student.advance_payment})")
+        query = """INSERT INTO students (name, payment, payment_in_advance)
+                VALUES (?, ?, ?)"""
+        self.cursor.execute(query, (student.name, student.lesson_price, student.advance_payment))
         self.connection.commit()
 
-    def edit_student(self, student_id, **kwargs):
-        changed = False
-        if "lesson_price" in kwargs:
-            new_lesson_price = kwargs["lesson_price"]
-            self.cursor.execute(f"""UPDATE students
-                                SET payment = {new_lesson_price}
-                                WHERE id = {student_id}""")
-            changed = True
-        if "payment_in_advance" in kwargs:
-            new_payment_in_advance = kwargs["payment_in_advance"]
-            self.cursor.execute(f"""UPDATE students
-                                SET payment_in_advance = {new_payment_in_advance}
-                                WHERE id = {student_id}""")
-            changed = True
-        if changed:
-            self.connection.commit()
+    def edit_student(self, student_id, student: Student):
+        # Find a way to commit only if something really changed?
+        query = """UPDATE students
+                SET name = ?, payment = ?, payment_in_advance = ?
+                WHERE id = ?;
+                """
+        self.cursor.execute(query, (student.name, student.lesson_price, student.advance_payment, student_id))
+        self.connection.commit()
 
     def remove_student(self, name: str) -> None:
-        self.cursor.execute(f"DELETE FROM students WHERE name = '{name}'")
+        query = "DELETE FROM students WHERE name = ?"
+        self.cursor.execute(query, name)
         self.connection.commit()
 
     def get_student_names(self): #-> list(tuple)
