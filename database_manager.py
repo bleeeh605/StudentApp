@@ -48,10 +48,10 @@ class DatabaseManager:
         result = selection.fetchall()
         return result 
     
-    def get_students_with_advance_payment(self): #-> list(tuple)
-        selection = self.cursor.execute("""SELECT id, name, payment, payment_in_advance
-                                        FROM students
-                                        WHERE students.payment_in_advance > 0""")
-        result = selection.fetchall()
-        return result
+    # def get_students_with_advance_payment(self): #-> list(tuple)
+    #     selection = self.cursor.execute("""SELECT id, name, payment, payment_in_advance
+    #                                     FROM students
+    #                                     WHERE students.payment_in_advance > 0""")
+    #     result = selection.fetchall()
+    #     return result
         

@@ -6,7 +6,8 @@ from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-import socket
+import ssl, certifi
+import urllib.request
 
 from definitions import LessonStatus, get_base_path
 
@@ -19,9 +20,16 @@ class CalendarManager():
         self.credentials = None
         self.service = None
         self.time_zone = ZoneInfo("Europe/Berlin")
-
+        self.internet_connection_present = False
 
     def start(self):
+        # Check for internet connection
+        if not ConnectionChecker.is_internet_connection_present():
+            self.internet_connection_present = False
+            print("No internet connection available. Cannot authenticate now.")
+            return
+        self.internet_connection_present = True
+
         base_path = get_base_path()
         credentials_path = os.path.join(base_path, "credentials.json")
         token_path = os.path.join(base_path, "token.pickle")
@@ -42,9 +50,8 @@ class CalendarManager():
                 if self.credentials and self.credentials.expired and self.credentials.refresh_token:
                     self.credentials.refresh(Request())
                 else:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        credentials_path, SCOPES)
-                    self.credentials = flow.run_local_server(port=0,
+                    flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+                    self.credentials = flow.run_local_server(port=8081,
                                                             access_type="offline",  # important: gives you a refresh token)
                                                             prompt="consent")       # important: forces Google to issue a refresh token even if previously authorized
                 # Save credentials
@@ -57,11 +64,9 @@ class CalendarManager():
             if os.path.exists(token_path):
                 os.remove(token_path)
 
-            flow = InstalledAppFlow.from_client_secrets_file(
-                credentials_path, SCOPES
-            )
+            flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
             self.credentials = flow.run_local_server(
-                port=0,
+                port=8081,
                 access_type="offline",
                 prompt="consent"
             )
@@ -70,7 +75,8 @@ class CalendarManager():
             with open(token_path, "wb") as token:
                 pickle.dump(self.credentials, token)
 
-        self.service = build("calendar", "v3", credentials=self.credentials)
+        if self.credentials and self.credentials.valid:
+            self.service = build("calendar", "v3", credentials=self.credentials)
 
     # def create_event(self, name, date, start, end):
     #     # ISO format example 2025-09-09T13:00:00
@@ -182,18 +188,16 @@ class CalendarEvent:
 
 class ConnectionChecker():
 
+    """
+    Check internet connection by trying to reach https://www.google.com.
+    Returns True if connected, False otherwise.
+    """
+
     @staticmethod
     def is_internet_connection_present() -> bool:
-        """
-        Check internet connection by trying to reach a DNS server (Google 8.8.8.8)
-        Returns True if connected, False otherwise.
-        """
-        timeout = 3 # in seconds
-        host = "8.8.8.8"
-        port = 53
         try:
-            socket.setdefaulttimeout(timeout)
-            socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            urllib.request.urlopen("https://www.google.com", timeout=5, context=ssl_context)
             return True
-        except OSError:
+        except Exception:
             return False

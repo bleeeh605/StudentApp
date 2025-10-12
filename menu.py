@@ -1,13 +1,5 @@
 import curses
 
-# MENU_LABELS = {
-#     #"main_menu": ["Add Lesson", "Edit Lesson", "Remove Lesson", "Add Student", "Edit Student", "Remove Student", "Exit"],
-#     "main_menu": ["Add Student", "Remove Student", "Exit"],
-#     "add_student_menu": ["Name", "Payment", "Back"],
-#     "remove_student_menu": ["Select student to remove", "Back"],
-#     "add_lesson_menu": ["Select Student", "Select Date", "Status", "Duration", "Confirm", "Back"]
-# }
-
 class Menu:
 
     def __init__(self, items, stdscr) -> None:

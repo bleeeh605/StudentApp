@@ -61,18 +61,3 @@ class MenuMain(Menu):
                 self.stdscr.getch()  # Wait for key press before going back
         return list_events
     
-
-    # def list_students_edit_callback(self):
-    #     def list_students_edit():
-    #         self.stdscr.clear()
-    #         h, w = self.stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
-    #         students = self.data_base.get_students()
-    #         for index, student in enumerate(students):
-    #             x = w//2 - len(student[0])//2  # Calculate x so text is centered horizontally
-    #             y = h//2 - len(students)//2 + index  # Calculate y so the whole menu is vertically centered
-    #             self.stdscr.addstr(y, x, student[0])  # Print the student's name
-    #         self.stdscr.refresh()
-    #         self.stdscr.getch()  # Wait for key press before going back
-    #         # return "BACK"   # Return to previous menu
-    #     return list_students_edit
-    
