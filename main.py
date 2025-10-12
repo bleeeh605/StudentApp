@@ -3,7 +3,7 @@ import curses
 from menu_main import MenuMain
 from database_manager import DatabaseManager
 from calendar_manager import CalendarManager
-from advance_payment_manager import AdvancePaymentManager
+from payment_manager import PaymentManager
 
 def main(stdscr):
     data_base = DatabaseManager()
@@ -12,7 +12,7 @@ def main(stdscr):
     calendar = CalendarManager()
     calendar.start()
 
-    advance_payment_manager = AdvancePaymentManager(stdscr, data_base, calendar)
+    advance_payment_manager = PaymentManager(stdscr, data_base, calendar)
     advance_payment_manager.do_routine()
 
     curses.curs_set(0)
@@ -21,6 +21,8 @@ def main(stdscr):
     # Main menu
     main_menu = MenuMain(stdscr, data_base, calendar)
     main_menu.run_menu()
+    
+if __name__ == "__main__":
 
-# Run the curses application safely (handles terminal cleanup if program crashes)
-curses.wrapper(main)
+    # Run the curses application safely (handles terminal cleanup if program crashes)
+    curses.wrapper(main)
