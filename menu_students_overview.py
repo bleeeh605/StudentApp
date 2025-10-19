@@ -7,45 +7,44 @@ from utility import Student
 class MenuStudentsOverview(Menu):
 
     def __init__(self, stdscr, data_base):
-        self.stdscr = stdscr
-        self.data_base = data_base
+        self._data_base = data_base
         super().__init__(stdscr)
 
-    def refresh_items(self):
-        self.items.clear()
-        student_rows = self.data_base.get_students_info()
+    def _refresh_items(self):
+        self._items.clear()
+        student_rows = self._data_base.get_students_info()
         for row in student_rows:
             id, name, lesson_price, advance_payment = row
             student = Student(name, lesson_price, advance_payment)
-            self.items.append(Menu.Item(f"{name} | {lesson_price} | {advance_payment}", create_lazy_menu_callback(MenuAddOrEditStudent,
-                                                                                                             self.stdscr,
-                                                                                                             self.data_base,
+            self._items.append(Menu.Item(f"{name} | {lesson_price} | {advance_payment}", create_lazy_menu_callback(MenuAddOrEditStudent,
+                                                                                                             self._stdscr,
+                                                                                                             self._data_base,
                                                                                                              action="edit",
                                                                                                              student_id=id,
                                                                                                              student=student,
-                                                                                                             refresh_callback=self.refresh_items)))
-        self.items.append(Menu.Item("Back", self.back_callback()))
+                                                                                                             refresh_callback=self._refresh_items)))
+        self._items.append(Menu.Item("Back", self._back_callback()))
 
-    def print_menu(self, selected_row_idx):
+    def _print_menu(self, selected_row_idx):
         """
         Prints the menu on screen, highlighting the selected row.
         """
-        self.stdscr.clear()  # Clear the screen before redrawing
-        h, w = self.stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
+        self._stdscr.clear()  # Clear the screen before redrawing
+        h, w = self._stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
 
-        longest_label = max([item.label for item in self.items], key=len)
+        longest_label = max([item.label for item in self._items], key=len)
         x = w//2 - len(longest_label)//2  # Calculate x so text is centered horizontally
-        y = h//2 - len(self.items)//2 # Calculate y so the whole menu is vertically centered
-        self.stdscr.addstr(y, x, "Name | Lesson price (€) | Payment in advance (€)") # print column names as 'title'
+        y = h//2 - len(self._items)//2 # Calculate y so the whole menu is vertically centered
+        self._stdscr.addstr(y, x, "Name | Lesson price (€) | Payment in advance (€)") # print column names as 'title'
 
         # Loop through each menu item and print it
-        for idx, item in enumerate(self.items):
+        for idx, item in enumerate(self._items):
             next_y = y + idx + 1 # + 1 because the 'title' is the first row
             if idx == selected_row_idx: # Highlight the currently selected row (inverted colors)
-                self.stdscr.attron(curses.color_pair(1))  # Turn on color pair 1
-                self.stdscr.addstr(next_y, x, str(item.label))  # Print the highlighted row
-                self.stdscr.attroff(curses.color_pair(1))  # Turn off highlighting
+                self._stdscr.attron(curses.color_pair(1))  # Turn on color pair 1
+                self._stdscr.addstr(next_y, x, str(item.label))  # Print the highlighted row
+                self._stdscr.attroff(curses.color_pair(1))  # Turn off highlighting
             else: # Print normal (non-highlighted) row
-                self.stdscr.addstr(next_y, x, str(item.label))
+                self._stdscr.addstr(next_y, x, str(item.label))
 
-        self.stdscr.refresh()  # Refresh the screen so changes are visible
+        self._stdscr.refresh()  # Refresh the screen so changes are visible
