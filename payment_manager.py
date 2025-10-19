@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from definitions import LessonStatus, Student
-from calendar_manager import ConnectionChecker
+from utility import LessonStatus, Student, ConnectionChecker
 
 class PaymentManager():
 

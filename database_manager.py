@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-from definitions import Student, get_base_path
+from utility import Student, get_base_path
 
 class DatabaseManager:
 
@@ -33,8 +33,8 @@ class DatabaseManager:
         self.connection.commit()
 
     def remove_student(self, name: str) -> None:
-        query = "DELETE FROM students WHERE name = ?"
-        self.cursor.execute(query, name)
+        query = "DELETE FROM students WHERE name = ?;"
+        self.cursor.execute(query, (name,))
         self.connection.commit()
 
     def get_student_names(self): #-> list(tuple)

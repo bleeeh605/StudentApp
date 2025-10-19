@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from menu import Menu, MenuItem, create_lazy_menu_callback
-from definitions import Student
+from menu import Menu, create_lazy_menu_callback
+from utility import Student, ConnectionChecker
 from menu_students_overview import MenuStudentsOverview
 from menu_add_or_edit_student import MenuAddOrEditStudent
 from menu_remove_student import MenuRemoveStudent
 from menu_create_lesson import MenuCreateLesson
-from calendar_manager import ConnectionChecker
 
 class MenuMain(Menu):
 
@@ -15,13 +14,16 @@ class MenuMain(Menu):
         self.stdscr = stdscr
         self.data_base = data_base
         self.calendar = calendar
-        self.items = [MenuItem("Add students", create_lazy_menu_callback(MenuAddOrEditStudent, self.stdscr, self.data_base, action="add", student=Student("---"))),
-                    MenuItem("Remove students", create_lazy_menu_callback(MenuRemoveStudent, stdscr, data_base)),
-                    MenuItem("Edit students", create_lazy_menu_callback(MenuStudentsOverview, self.stdscr, self.data_base)),
-                    MenuItem("Create lesson", create_lazy_menu_callback(MenuCreateLesson, self.stdscr, self.calendar)),
-                    MenuItem("Show upcoming events", self.create_list_events_callback()),
-                    MenuItem("Exit", None)]
-        super().__init__(self.items, self.stdscr)
+        super().__init__(self.stdscr)
+
+    def refresh_items(self):
+        self.items.clear()
+        self.items = [Menu.Item("Add students", create_lazy_menu_callback(MenuAddOrEditStudent, self.stdscr, self.data_base, action="add", student=Student("---"))),
+                      Menu.Item("Remove students", create_lazy_menu_callback(MenuRemoveStudent, self.stdscr, self.data_base)),
+                      Menu.Item("Edit students", create_lazy_menu_callback(MenuStudentsOverview, self.stdscr, self.data_base)),
+                      Menu.Item("Create lesson", create_lazy_menu_callback(MenuCreateLesson, self.stdscr, self.calendar)),
+                      Menu.Item("Show upcoming events", self.create_list_events_callback()),
+                      Menu.Item("Exit", None)]
     
     def create_list_events_callback(self):
         # TODO: Automatically determine the timezone of the computer

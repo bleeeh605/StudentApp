@@ -6,10 +6,8 @@ from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-import ssl, certifi
-import urllib.request
 
-from definitions import LessonStatus, get_base_path
+from utility import LessonStatus, get_base_path, ConnectionChecker
 
 # If modifying these SCOPES, delete the token.pickle file.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -185,19 +183,3 @@ class CalendarEvent:
         self.start_hour = start_hour
         self.duration = duration
         self.status = status
-
-class ConnectionChecker():
-
-    """
-    Check internet connection by trying to reach https://www.google.com.
-    Returns True if connected, False otherwise.
-    """
-
-    @staticmethod
-    def is_internet_connection_present() -> bool:
-        try:
-            ssl_context = ssl.create_default_context(cafile=certifi.where())
-            urllib.request.urlopen("https://www.google.com", timeout=5, context=ssl_context)
-            return True
-        except Exception:
-            return False

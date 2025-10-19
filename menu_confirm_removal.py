@@ -1,4 +1,4 @@
-from menu import Menu, MenuItem
+from menu import Menu
 
 class MenuConfirmRemoval(Menu):
      
@@ -7,17 +7,13 @@ class MenuConfirmRemoval(Menu):
         self.data_base = data_base
         self.student_name = student_name
         self.refresh_callback = refresh_callback
+        super().__init__(stdscr)
 
-        items = [MenuItem("Yes", self.create_yes_callback()),
-                MenuItem("No", self.back_callback()),
-                MenuItem("Back", self.back_callback())]
-        super().__init__(items, stdscr)
-
-    def run_menu(self):
-        self.stdscr.clear()
-        self.stdscr.addstr(2, 2, f"Remove {self.student_name}?")
-        self.stdscr.refresh()
-        return super().run_menu()
+    def refresh_items(self):
+        self.items.clear()
+        self.items = [Menu.Item("Yes", self.create_yes_callback()),
+                     Menu.Item("No", self.back_callback()),
+                     Menu.Item("Back", self.back_callback())]
 
     def create_yes_callback(self):
         def yes_callback():

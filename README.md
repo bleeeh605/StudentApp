@@ -3,7 +3,7 @@
 A semi-automated application to keep track of students' lessons and their payments.
 
 ## Creating .exe file
-pyinstaller --onefile --clean main.py
+pyinstaller --onefile --add-data "$(python -m certifi):certifi" --clean main.py
 
 --icon=favicon.ico can be added for a specific icon.
 

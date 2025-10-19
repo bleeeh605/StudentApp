@@ -1,16 +1,20 @@
 import curses
 
 class Menu:
+    items = []
 
-    def __init__(self, items, stdscr) -> None:
-        self.items = items
+    def __init__(self, stdscr) -> None:
         self.stdscr = stdscr
+
+    def refresh_items(self):
+        return
 
     def run_menu(self):
         """
         Runs a given menu and returns the index of the chosen item.
         """
         current_row = 0  # Start at the first row
+        self.refresh_items()
 
         while True:
 
@@ -58,12 +62,12 @@ class Menu:
     def back_callback(self):
         def back():
             return "BACK"
-        return
+        return back
     
-class MenuItem():
-    def __init__(self, label, callback=None):
-        self.label = label          # What’s shown in the menu
-        self.callback = callback    # Function to call when selected
+    class Item():
+        def __init__(self, label, callback=None):
+            self.label = label          # What’s shown in the menu
+            self.callback = callback    # Function to call when selected
 
 def create_lazy_menu_callback(menu: Menu, stdscr, data_base, *args, **kwargs):
     def create_menu():

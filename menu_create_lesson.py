@@ -1,26 +1,26 @@
 import curses
 
-from menu import Menu, MenuItem
-from calendar_manager import CalendarEvent, ConnectionChecker
+from menu import Menu, create_lazy_menu_callback
+from calendar_manager import CalendarEvent
+from utility import ConnectionChecker, LessonStatus
 
 class MenuCreateLesson(Menu):
     
     def __init__(self, stdscr, calendar):
         self.stdscr = stdscr
         self.calendar = calendar
-        self.items = []
         self.event = CalendarEvent("(Untitled)")
-        self._needs_refresh = False
-        super().__init__(self.items, stdscr)
+        super().__init__(stdscr)
 
     def refresh_items(self):
-        self.items = [MenuItem(f"Name: {self.event.name}", self.create_enter_event_parameter_callback("name")),
-                      MenuItem(f"Date: {self.event.date}", self.create_enter_event_parameter_callback("date")),
-                      MenuItem(f"Start hour: {self.event.start_hour}", self.create_enter_event_parameter_callback("start hour")),
-                      MenuItem(f"Duration: {self.event.duration}", self.create_enter_event_parameter_callback("duration")),
-                      MenuItem(f"Status: {self.event.status}", self.create_enter_event_parameter_callback("status")),
-                      MenuItem("Create", self.create_confirm_event_callback())]
-        self.items.append(MenuItem("Back", self.back_callback()))
+        self.items.clear()
+        self.items = [Menu.Item(f"Name: {self.event.name}", self.create_enter_event_parameter_callback("name")),
+                      Menu.Item(f"Date: {self.event.date}", self.create_enter_event_parameter_callback("date")),
+                      Menu.Item(f"Start hour: {self.event.start_hour}", self.create_enter_event_parameter_callback("start hour")),
+                      Menu.Item(f"Duration: {self.event.duration}", self.create_enter_event_parameter_callback("duration")),
+                      Menu.Item(f"Status: {self.event.status}", create_lazy_menu_callback(SelectStatus, self.stdscr, self.event.status, self.refresh_items)),
+                      Menu.Item("Create", self.create_confirm_event_callback())]
+        self.items.append(Menu.Item("Back", self.back_callback()))
 
     def create_enter_event_parameter_callback(self, option):
         def create_enter_event_parameter():
@@ -63,7 +63,7 @@ class MenuCreateLesson(Menu):
                                     self.event.duration = input
                         elif option == "status":
                             self.event.status = input_str.strip()
-                        self.set_needs_refresh_true()
+                        self.refresh_items()
                         break # back to previous menu
                 elif key == curses.KEY_BACKSPACE or key == 127:
                     input_str = input_str[:-1]
@@ -88,37 +88,20 @@ class MenuCreateLesson(Menu):
             return "BACK"  # Return to previous menu
         return create_confirm_event
 
-    def run_menu(self):
-        """
-        Runs a given menu and returns the index of the chosen item.
-        """
-        current_row = 0  # Start at the first row
-        self.refresh_items()
+class SelectStatus(Menu):
 
-        while True:
-            if self._needs_refresh:
-                self.refresh_items()
-                self._needs_refresh = False  # reset after refreshing
+    def __init__(self, stdscr, status, refresh_callback):
+        self.stdscr = stdscr
+        self.status = status
+        self.refresh_callback = refresh_callback
+        super().__init__(stdscr)
 
-            self.print_menu(current_row) # Draw menu
+    def refresh_items(self):
+        self.items.clear()
+        for status in LessonStatus:
+            self.items.append(Menu.Item(LessonStatus(status).name, self.select_status_callback(status.value)))
+        self.items.append(Menu.Item("Back", self.back_callback()))
 
-            key = self.stdscr.getch() # Wait for the next key press
-            if key == curses.KEY_UP and current_row > 0:
-                current_row -= 1
-            elif key == curses.KEY_DOWN and current_row < len(self.items)-1:
-                current_row += 1
-            elif key in [curses.KEY_ENTER, 10, 13]: # Current row was selected!
-                action = self.items[current_row].callback
-                if action:
-                    result = action() # Call callback
-                    if result == "BACK":
-                        break
-                else:
-                    break
-
-            # Redraw menu with updated selection
-            self.print_menu(current_row)
-
-    def set_needs_refresh_true(self):
-        self._needs_refresh = True
-    
+    def select_status_callback(self, status):
+        self.status = status
+        self.refresh_callback()

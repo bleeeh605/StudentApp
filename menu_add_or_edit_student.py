@@ -1,33 +1,32 @@
 import curses
 
-from menu import Menu, MenuItem
-from definitions import Student
+from menu import Menu
+from utility import Student
 
 class MenuAddOrEditStudent(Menu):
      
     def __init__(self, stdscr, data_base, action, student_id=None, student=Student("---"), refresh_callback=None):
         self.stdscr = stdscr
         self.data_base = data_base
-        self.items = []
         self.student_id = student_id
         self.student = student
         self.action = action
         self.refresh_callback = refresh_callback
-        self._needs_refresh = False
-        super().__init__(self.items, stdscr)
+        super().__init__(stdscr)
 
     def refresh_items(self):
-        self.items = [MenuItem(f"Name: {self.student.name}", self.create_enter_student_parameter_callback("name")),
-                      MenuItem(f"Lesson price: {self.student.lesson_price} (€)", self.create_enter_student_parameter_callback("lesson price")),
-                      MenuItem(f"Payment in advance: {self.student.advance_payment} (€)", self.create_enter_student_parameter_callback("payment in advance"))]
+        self.items.clear()
+        self.items = [Menu.Item(f"Name: {self.student.name}", self.create_enter_student_parameter_callback("name")),
+                Menu.Item(f"Lesson price: {self.student.lesson_price} (€)", self.create_enter_student_parameter_callback("lesson price")),
+                Menu.Item(f"Payment in advance: {self.student.advance_payment} (€)", self.create_enter_student_parameter_callback("payment in advance"))]
         if self.action == "add":
-            self.items.append(MenuItem("Confirm", self.create_confirm_add_student_callback()))
+            self.items.append(Menu.Item("Confirm", self.create_confirm_add_student_callback()))
         elif self.action == "edit":
-            self.items.append(MenuItem("Confirm", self.create_confirm_edit_student_callback()))
-        self.items.append(MenuItem("Back", self.back_callback()))
+            self.items.append(Menu.Item("Confirm", self.create_confirm_edit_student_callback()))
+        self.items.append(Menu.Item("Back", self.back_callback()))
 
     def create_enter_student_parameter_callback(self, option):
-        def create_enter_student_parameter():
+        def enter_student_parameter_callback():
             curses.curs_set(1)     # show cursor
             self.stdscr.clear()
 
@@ -61,13 +60,13 @@ class MenuAddOrEditStudent(Menu):
                             if input_str.strip().isdigit():
                                 if 0 <= int(input_str.strip()):
                                     self.student.advance_payment = int(input_str.strip())
-                        self.set_needs_refresh_true()
+                        self.refresh_items()
                         break # Back to previous menu
                 elif key == curses.KEY_BACKSPACE or key == 127:
                     input_str = input_str[:-1]
                 elif key != -1 and 32 <= key <= 126:  # printable chars
                     input_str += chr(key)
-        return create_enter_student_parameter
+        return enter_student_parameter_callback
     
     def create_confirm_add_student_callback(self):
         def create_confirm_add_student():
@@ -82,37 +81,3 @@ class MenuAddOrEditStudent(Menu):
             self.refresh_callback()
             return "BACK"  # Return to previous menu
         return create_confirm_edit_student_callback
-    
-    def run_menu(self):
-        """
-        Runs a given menu and returns the index of the chosen item.
-        """
-        current_row = 0  # Start at the first row
-        self.refresh_items()
-
-        while True:
-            if self._needs_refresh:
-                self.refresh_items()
-                self._needs_refresh = False  # reset after refreshing
-
-            self.print_menu(current_row) # Draw menu
-
-            key = self.stdscr.getch() # Wait for the next key press
-            if key == curses.KEY_UP and current_row > 0:
-                current_row -= 1
-            elif key == curses.KEY_DOWN and current_row < len(self.items)-1:
-                current_row += 1
-            elif key in [curses.KEY_ENTER, 10, 13]: # Current row was selected!
-                action = self.items[current_row].callback
-                if action:
-                    result = action() # Call callback
-                    if result == "BACK":
-                        break
-                else:
-                    break
-
-            # Redraw menu with updated selection
-            self.print_menu(current_row)
-
-    def set_needs_refresh_true(self):
-        self._needs_refresh = True
