@@ -22,6 +22,25 @@ def get_base_path():
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))  # Running as .py script
 
+def weekday_to_text(weekday_index):
+    if weekday_index == 0:
+        return "Monday"
+    elif weekday_index == 1:
+        return "Tuesday"
+    elif weekday_index == 2:
+        return "Wednesday"
+    elif weekday_index == 3:
+        return "Thursday"
+    elif weekday_index == 4:
+        return "Friday"
+    elif weekday_index == 5:
+        return "Saturday"
+    elif weekday_index == 6:
+        return "Sunday"
+    else:
+        raise Exception("Invalid weekday index.")
+
+
 class ConnectionChecker():
 
     """
