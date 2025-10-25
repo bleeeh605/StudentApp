@@ -14,14 +14,17 @@ BUDGET_CALCULATION_START_DATE = datetime(
 
 class MenuMain(Menu):
 
-    def __init__(self, stdscr, data_base, calendar):
+    def __init__(self, stdscr, data_base, calendar, update_lessons=None):
+        super().__init__(stdscr)
         self._data_base = data_base
         self._calendar = calendar
-        super().__init__(stdscr)
+        self._update_lessons = update_lessons
 
     def _refresh_items(self):
         self._items.clear()
-        self._items = [Menu.Item("Add students", create_lazy_menu_callback(MenuAddOrEditStudent, self._stdscr, self._data_base, action="add", student=Student("---"))),
+        self._items = [Menu.Item("Update lessons", self._update_lessons_callback),
+                       Menu.Item("Budget", self._calculate_budget_callback),
+                       Menu.Item("Add students", create_lazy_menu_callback(MenuAddOrEditStudent, self._stdscr, self._data_base, action="add", student=Student("---"))),
                        Menu.Item("Remove students", create_lazy_menu_callback(
                            MenuRemoveStudent, self._stdscr, self._data_base)),
                        Menu.Item("Edit students", create_lazy_menu_callback(
@@ -30,7 +33,7 @@ class MenuMain(Menu):
                            MenuCreateLesson, self._stdscr, self._calendar)),
                        Menu.Item("Show upcoming events",
                                  self._list_events_callback),
-                       Menu.Item("Budget", self._calculate_budget_callback),
+                       
                        Menu.Item("Exit", None)]
 
     def _list_events_callback(self):
@@ -64,11 +67,10 @@ class MenuMain(Menu):
             for index, event in enumerate(events):
                 event_begin = event["start"].get(
                     "dateTime", event["start"].get("date"))
-                event_begin_string = datetime.fromisoformat(
-                    event_begin).strftime("%d.%m.%Y %H:%M")
-                weekday = datetime.fromisoformat(event_begin).weekday()
+                event_begin = datetime.fromisoformat(
+                    event_begin)
                 event_name = event["summary"]
-                event_string = f"{event_name} -> {event_begin_string} ({weekday_to_text(weekday)})"
+                event_string = f"{event_name} -> {event_begin.strftime('%d.%m.%Y %H:%M')} ({weekday_to_text(event_begin)})"
                 # Calculate x so text is centered horizontally
                 x = w//2 - len(event_string)//2
                 # Calculate y so the whole menu is vertically centered
@@ -136,5 +138,10 @@ class MenuMain(Menu):
         self._stdscr.addstr(
             y+1, x, f"Average budget per month: {budget_average_per_month}€")
         self._stdscr.addstr(y+2, x, f"Total budget this month: {budget_this_month}€")
+        self._stdscr.addstr(y+3, x, "Press any key to continue...")
         self._stdscr.refresh()
         self._stdscr.getch()
+
+    def _update_lessons_callback(self):
+        if self._update_lessons:
+            self._update_lessons()

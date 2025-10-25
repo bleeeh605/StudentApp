@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from utility import LessonStatus, Student, ConnectionChecker
+from utility import LessonStatus, Student, ConnectionChecker, weekday_to_text
 
 class PaymentManager():
 
@@ -16,6 +16,7 @@ class PaymentManager():
         x = w//4
         y = h//4
         self._stdscr.addstr(y, x, "Connecting...")
+        self._stdscr.refresh()
         if not ConnectionChecker.is_internet_connection_present():
             self._stdscr.addstr(y + 1, x, "Connection could not be established. Check your internet connection if you want to use ")
             self._stdscr.addstr(y + 2, x, "full program functionality. Press any key to continue...")
@@ -23,8 +24,8 @@ class PaymentManager():
             return
         
         updated_students = []
-        self._stdscr.clear()
         self._stdscr.addstr(y, x, "Doing an automated update for students. Please wait...")
+        self._stdscr.refresh()
         # Get information for all students
         student_rows = self._data_base.get_students_info()
         now = datetime.now(ZoneInfo("Europe/Berlin"))
@@ -55,12 +56,14 @@ class PaymentManager():
             self._stdscr.clear()  # Clear the screen before redrawing
             for index, update in enumerate(updated_students):
                 lesson_start_date = update[1]['start'].get('dateTime', update[1]['start'].get('date'))
-                update_string = f"{update[0]}'s lesson {lesson_start_date} was marked as {update[2]}."
+                lesson_start_date = datetime.fromisoformat(lesson_start_date)
+                update_string = f"{update[0]}'s lesson on {lesson_start_date.strftime('%d.%m.%Y')} ({weekday_to_text(lesson_start_date)}) was marked as {update[2]}."
                 if index == 0:
                     update_string = "Update: " + update_string
                 y += index
                 self._stdscr.addstr(y, x, update_string)
             self._stdscr.addstr(y+1, x, "Press any key to continue...")
         else:
-            self._stdscr.addstr(y+1, x, "No automated updates were needed. Press any key to continue...")
+            self._stdscr.addstr(y, x, "No automated updates were needed. Press any key to continue...")
+        self._stdscr.refresh()
         self._stdscr.getch()
