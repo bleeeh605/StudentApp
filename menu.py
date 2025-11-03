@@ -16,7 +16,7 @@ class Menu:
         Runs a given menu and returns the index of the chosen item.
         """
         current_row = 0  # Start at the first row
-        self._refresh_items()
+        self._refresh_items() # Update and show menu items
 
         while True:
 

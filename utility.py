@@ -2,6 +2,7 @@ from enum import Enum
 import os, sys
 import ssl, certifi
 import urllib.request
+import datetime
 
 class Student():
     def __init__(self, name, lesson_price=35, advance_payment=0, lesson_in_this_week=None, lessons=None):
@@ -21,6 +22,26 @@ def get_base_path():
     if getattr(sys, "frozen", False):  # Running as bundled exe
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))  # Running as .py script
+
+def weekday_to_text(time_input: datetime.datetime):
+    index = time_input.weekday()
+    if index == 0:
+        return "Monday"
+    elif index == 1:
+        return "Tuesday"
+    elif index == 2:
+        return "Wednesday"
+    elif index == 3:
+        return "Thursday"
+    elif index == 4:
+        return "Friday"
+    elif index == 5:
+        return "Saturday"
+    elif index == 6:
+        return "Sunday"
+    else:
+        raise Exception("Invalid weekday index.")
+
 
 class ConnectionChecker():
 

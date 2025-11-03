@@ -96,7 +96,7 @@ class CalendarManager():
             "summary": calendar_event.name,
             "start": {"dateTime": start_time, 'timeZone': str(self._time_zone)},
             "end": {"dateTime": end_time, 'timeZone': str(self._time_zone)},
-            "colorId": calendar_event.status,
+            "colorId": calendar_event.status.value,
         }
         event = self._service.events().insert(calendarId='primary', body=event).execute()
 
@@ -177,7 +177,7 @@ class CalendarEvent:
                 date=datetime.today().strftime("%Y-%m-%d"), 
                 start_hour=datetime.now(ZoneInfo("Europe/Berlin")).strftime("%H:%M"),
                 duration=45,
-                status=str(LessonStatus.PENDING.value)):
+                status=LessonStatus.PENDING):
         self.name = name
         self.date = date
         self.start_hour = start_hour

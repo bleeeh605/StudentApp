@@ -19,7 +19,7 @@ def main(stdscr):
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
     # Main menu
-    main_menu = MenuMain(stdscr, data_base, calendar)
+    main_menu = MenuMain(stdscr, data_base, calendar, update_lessons=advance_payment_manager.do_routine)
     main_menu.run_menu()
     
 if __name__ == "__main__":
