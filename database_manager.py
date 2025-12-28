@@ -46,7 +46,46 @@ class DatabaseManager:
         selection = self._cursor.execute("""SELECT id, name, payment, payment_in_advance
                                         FROM students""")
         result = selection.fetchall()
-        return result 
+        return result
+    
+    def add_settings_table(self):
+        """ Add user settings table if it does not exists """
+        self._cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS user_settings (
+                        key TEXT PRIMARY KEY,
+                        value TEXT
+                        )
+                        """)
+
+    def set_budget_start_date(self, new_start_date):
+        query = """INSERT INTO user_settings (key, value) 
+                   VALUES (?, ?) 
+                   ON CONFLICT(key)
+                   DO UPDATE SET value = excluded.value"""
+        self._cursor.execute(query, ("budget_start_date", new_start_date))
+        self._connection.commit()
+
+    def get_budget_start_date(self):
+        selection = self._cursor.execute("""SELECT value
+                                         FROM user_settings 
+                                         WHERE key='budget_start_date'""")
+        result = selection.fetchone()
+        return result
+    
+    def set_budget_end_date(self, new_end_date):
+        query = """INSERT INTO user_settings (key, value) 
+                   VALUES (?, ?) 
+                   ON CONFLICT(key)
+                   DO UPDATE SET value = excluded.value"""
+        self._cursor.execute(query, ("budget_end_date", new_end_date))
+        self._connection.commit()
+
+    def get_budget_end_date(self):
+        selection = self._cursor.execute("""SELECT value
+                                         FROM user_settings 
+                                         WHERE key='budget_end_date'""")
+        result = selection.fetchone()
+        return result
     
     # def get_students_with_advance_payment(self): #-> list(tuple)
     #     selection = self.cursor.execute("""SELECT id, name, payment, payment_in_advance

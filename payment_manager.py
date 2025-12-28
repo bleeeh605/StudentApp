@@ -44,25 +44,28 @@ class PaymentManager():
         # Get information for all students
         student_rows = self._data_base.get_students_info()
         now = datetime.now(ZoneInfo("Europe/Berlin"))
-        month_earlier = now.replace(hour=0, minute=0, second=0, microsecond=0) 
+        month_earlier = now.replace(hour=0, minute=0, second=0, microsecond=0)
         month_earlier = month_earlier + timedelta(days=-30)
         # For each student: Search for lessons with this student in the past month
         for student_row in student_rows:
-            id, name, lesson_price, advance_payment = student_row
+            student_id, name, lesson_price, advance_payment = student_row
             lessons = self._calendar.get_student_lessons_in_selected_period(name, month_earlier, now)
             # For each such lesson:
             for lesson in lessons:
                 # If lesson is not yet paid
-                if lesson.get("colorId") != str(LessonStatus.PAID.value):
+                color = lesson.get("colorId")
+                if color != str(LessonStatus.PAID.value):
+                    if color == str(LessonStatus.DEMO.value) or color is None:
+                        continue
                     # If their advance payment is enough to cover their lesson price
                     if advance_payment >= lesson_price:
                         # Reduce payment in advance and patch event and update data base
                         advance_payment -= lesson_price
                         # Mark lesson as paid
                         self._calendar.edit_event(lesson, color_id=str(LessonStatus.PAID.value))
-                        self._data_base.edit_student(student_id=id, student=Student(name=name, advance_payment=advance_payment))
+                        self._data_base.edit_student(student_id=student_id, student=Student(name=name, lesson_price=lesson_price, advance_payment=advance_payment))
                         updated_students.append((name, lesson, "paid"))
-                    elif lesson.get("colorId") != str(LessonStatus.UNPAID.value):
+                    elif color != str(LessonStatus.UNPAID.value):
                         # Otherwise mark lesson as unpaid
                         self._calendar.edit_event(lesson, color_id=str(LessonStatus.UNPAID.value))
                         updated_students.append((name, lesson, "unpaid"))

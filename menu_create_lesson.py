@@ -50,18 +50,7 @@ class MenuCreateLesson(Menu):
                 if key == 27:  # ESC to exit
                     break
                 elif key in (curses.KEY_ENTER, 10, 13):  # Enter key
-                    if input_string.strip():
-                        if option == "name":
-                            self._event.name = input_string.strip()
-                        elif option == "date":
-                            self._event.date = input_string.strip()
-                        elif option == "start hour":
-                            self._event.start_hour = input_string.strip()
-                        elif option == "duration":
-                            if input_string.strip().isdigit():
-                                input_float = float(input_string.strip())
-                                if 0 < input_float <= 120: # currently limited between 1 minute and 2 hours
-                                    self._event.duration = input_float
+                        self._handle_input(option, input_string)
                         self._refresh_items()
                         break # back to previous menu
                 elif key == curses.KEY_BACKSPACE or key == 127:
@@ -70,20 +59,38 @@ class MenuCreateLesson(Menu):
                     input_string += chr(key)
         return create_enter_event_parameter
     
+    def _handle_input(self, option, input_string):
+        if input_string.strip():
+            if option == "name":
+                self._event.name = input_string.strip()
+            elif option == "date":
+                self._event.date = input_string.strip()
+            elif option == "start hour":
+                self._event.start_hour = input_string.strip()
+            elif option == "duration":
+                if input_string.strip().isdigit():
+                    input_float = float(input_string.strip())
+                    if 0 < input_float <= 120: # currently limited between 1 minute and 2 hours
+                        self._event.duration = input_float
+    
     def _confirm_event_callback(self):
         if ConnectionChecker.is_internet_connection_present():
             self._calendar.create_event(self._event)
         else:
-            self._stdscr.clear()
-            h, w = self._stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
-            error_string = "Connection unavailable. Function is currently disabled. Press any key to continue..."
-            x = w//2 - round(len(error_string)//2)        # Calculate x so text is centered horizontally
-            y = h//2 - 1                                  # Calculate y so the whole menu is vertically centered
-            # TODO: Find out why this causes a crash in the .exe variant with x,y
-            self._stdscr.addstr(0, 0, error_string)
-            self._stdscr.refresh()
-            self._stdscr.getch()  # Wait for key press before going back
+            self._show_connection_unaveilable()
         return "BACK"  # Return to previous menu
+    
+    def _show_connection_unaveilable(self):
+        self._stdscr.clear()
+        h, w = self._stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
+        error_string = "Connection unavailable. Function is currently disabled. Press any key to continue..."
+        x = w//2 - round(len(error_string)//2)        # Calculate x so text is centered horizontally
+        y = h//2 - 1                                  # Calculate y so the whole menu is vertically centered
+        # TODO: Find out why this causes a crash in the .exe variant with x,y
+        self._stdscr.addstr(0, 0, error_string)
+        self._stdscr.refresh()
+        self._stdscr.getch()  # Wait for key press before going back
+
 
 class SelectValueMenu(Menu):
 

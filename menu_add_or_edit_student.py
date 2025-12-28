@@ -46,19 +46,8 @@ class MenuAddOrEditStudent(Menu):
                 key = self._stdscr.getch()
                 if key == 27:  # ESC to exit
                     break
-                elif key in (curses.KEY_ENTER, 10, 13):  # Enter key
-                    if input_str.strip():
-                        if option == "name":
-                            if 0 < len(input_str.strip()) < 25:
-                                self._student.name = input_str.strip()
-                        elif option == "lesson price":
-                            if input_str.strip().isdigit():
-                                if 0 <= int(input_str.strip()):
-                                    self._student.lesson_price = int(input_str.strip())
-                        elif option == "payment in advance":
-                            if input_str.strip().isdigit():
-                                if 0 <= int(input_str.strip()):
-                                    self._student.advance_payment = int(input_str.strip())
+                elif key in (curses.KEY_ENTER, 10, 13):  # Enter key, handle input and refresh items accordingly
+                        self._hanlde_input(option, input_str)
                         self._refresh_items()
                         break # Back to previous menu
                 elif key == curses.KEY_BACKSPACE or key == 127:
@@ -66,6 +55,21 @@ class MenuAddOrEditStudent(Menu):
                 elif key != -1 and 32 <= key <= 126:  # printable chars
                     input_str += chr(key)
         return enter_student_parameter_callback
+    
+    def _hanlde_input(self, option, input_string):
+        if input_string.strip():
+            if option == "name":
+                if 0 < len(input_string.strip()) < 25:
+                    self._student.name = input_string.strip()
+            elif option == "lesson price":
+                if input_string.strip().isdigit():
+                    if 0 <= int(input_string.strip()):
+                        self._student.lesson_price = int(input_string.strip())
+            elif option == "payment in advance":
+                if input_string.strip().isdigit():
+                    if 0 <= int(input_string.strip()):
+                        self._student.advance_payment = int(input_string.strip())
+
     
     def _create_confirm_add_student_callback(self):
         def create_confirm_add_student():
