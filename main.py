@@ -5,19 +5,13 @@ from database_manager import DatabaseManager
 from calendar_manager import CalendarManager
 from payment_manager import PaymentManager
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
 from utility import set_terminal_size
 
 def main(standard_screen):
     data_base = DatabaseManager()
     data_base.start()
 
-    data_base.add_settings_table()
-    if data_base.get_budget_start_date() is None:
-        data_base.set_budget_start_date(datetime(2025, 10, 1, 0, 0, 0, tzinfo=ZoneInfo("UTC")).isoformat())
-    if data_base.get_budget_end_date() is None:
-        data_base.set_budget_end_date(datetime.now(ZoneInfo("UTC")).isoformat())
+    data_base.apply_pending_migrations()
 
     calendar = CalendarManager()
     calendar.start()
@@ -33,6 +27,6 @@ def main(standard_screen):
     main_menu.run_menu()
     
 if __name__ == "__main__":
-    set_terminal_size(rows=40, cols=120)
+    set_terminal_size(rows=40, cols=140)
     # Run the curses application safely (handles terminal cleanup if program crashes)
     curses.wrapper(main)

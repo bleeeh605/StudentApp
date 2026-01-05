@@ -11,10 +11,10 @@ class BudgetMenu(Menu):
         super().__init__(stdscr)
         self._data_base = data_base
         self._calendar = calendar
-        start_date_isoformat = data_base.get_budget_start_date()[0]
+        start_date_isoformat = data_base.get_budget_start_date()
         start_date = datetime.fromisoformat(start_date_isoformat)
         self._start_date = start_date.replace(tzinfo=ZoneInfo("UTC"))
-        end_date_isoformat = data_base.get_budget_end_date()[0]
+        end_date_isoformat = data_base.get_budget_end_date()
         end_date = datetime.fromisoformat(end_date_isoformat)
         self._end_date = end_date.replace(tzinfo=ZoneInfo("UTC"))
 

@@ -10,7 +10,7 @@ certificate_path = certifi.where()
 # PyInstaller command
 cmd = [
     "pyinstaller",
-    "--onedir",
+    "--onefile",
     "--name", "main",
     "--add-data", f"{certificate_path}:certifi",
     "--clean",
