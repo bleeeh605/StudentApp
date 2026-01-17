@@ -74,16 +74,21 @@ class MenuCreateLesson(Menu):
                         self._event.duration = input_float
     
     def _confirm_event_callback(self):
-        if ConnectionChecker.is_internet_connection_present():
-            self._calendar.create_event(self._event)
+        if not ConnectionChecker.is_internet_connection_present():
+            self._display_unaveilability("connection")
+        elif not self._calendar.service_is_set_up():
+            self._display_unaveilability("calendar")
         else:
-            self._show_connection_unaveilable()
+            self._calendar.create_event(self._event)
         return "BACK"  # Return to previous menu
     
-    def _show_connection_unaveilable(self):
+    def _display_unaveilability(self, case):
         self._stdscr.clear()
         h, w = self._stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
-        error_string = "Connection unavailable. Function is currently disabled. Press any key to continue..."
+        if case == "calendar":
+            error_string = "Calendar unavailable. Function is currently disabled. Press any key to continue..."
+        else:
+            error_string = "Connection unavailable. Function is currently disabled. Press any key to continue..."
         x = w//2 - round(len(error_string)//2)        # Calculate x so text is centered horizontally
         y = h//2 - 1                                  # Calculate y so the whole menu is vertically centered
         # TODO: Find out why this causes a crash in the .exe variant with x,y

@@ -20,7 +20,11 @@ class PaymentManager():
         self._stdscr.refresh()
 
         if not ConnectionChecker.is_internet_connection_present():
-            self._display_connection_unaveilable(x, y)
+            self._display_unaveilability("connection", x, y)
+            return
+        
+        if not self._calendar.service_is_set_up():
+            self._display_unaveilability("calendar", x, y)
             return
         
         self._stdscr.addstr(y, x, "Doing an automated update for students. Please wait...")
@@ -32,10 +36,14 @@ class PaymentManager():
         update_text_strings = self._create_updated_students_texts(updated_students)
         self._show_update_text(update_text_strings, x, y)
 
-    def _display_connection_unaveilable(self, x: int, y: int) -> None:
+    def _display_unaveilability(self, case, x: int, y: int) -> None:
             self._stdscr.clear()  # Clear the screen before redrawing
-            self._stdscr.addstr(y + 1, x, "Connection could not be established. Check your internet connection if you want to use ")
-            self._stdscr.addstr(y + 2, x, "full program functionality. Press any key to continue...")
+            if case == "calendar":
+                self._stdscr.addstr(y + 1, x, "Calendar could not be initialized properly. Check your connection and restart the program ")
+                self._stdscr.addstr(y + 2, x, "if you want to use full program functionality. Press any key to continue...")
+            else:
+                self._stdscr.addstr(y + 1, x, "Connection could not be established. Check your internet connection if you want to use ")
+                self._stdscr.addstr(y + 2, x, "full program functionality. Press any key to continue...")
             self._stdscr.refresh()
             self._stdscr.getch()
 

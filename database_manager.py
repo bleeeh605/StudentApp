@@ -89,11 +89,11 @@ class DatabaseManager:
             self._connection.commit()
 
     def set_budget_start_date(self, new_start_date):
-        query = """INSERT INTO user_settings (key, value) 
-                   VALUES (?, ?) 
-                   ON CONFLICT(key)
+        query = """INSERT INTO user_settings (id, key, value) 
+                   VALUES (?, ?, ?) 
+                   ON CONFLICT(id)
                    DO UPDATE SET value = excluded.value"""
-        self._cursor.execute(query, ("budget_start_date", new_start_date))
+        self._cursor.execute(query, (1, "budget_start_date", new_start_date))
         self._connection.commit()
 
     def get_budget_start_date(self):
@@ -104,11 +104,11 @@ class DatabaseManager:
         return result[0]
     
     def set_budget_end_date(self, new_end_date):
-        query = """INSERT INTO user_settings (key, value) 
-                   VALUES (?, ?) 
-                   ON CONFLICT(key)
+        query = """INSERT INTO user_settings (id, key, value) 
+                   VALUES (?, ?, ?) 
+                   ON CONFLICT(id)
                    DO UPDATE SET value = excluded.value"""
-        self._cursor.execute(query, ("budget_end_date", new_end_date))
+        self._cursor.execute(query, (2, "budget_end_date", new_end_date))
         self._connection.commit()
 
     def get_budget_end_date(self):
