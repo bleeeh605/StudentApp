@@ -16,7 +16,7 @@ class Menu:
         Runs a given menu and returns the index of the chosen item.
         """
         current_row = 0  # Start at the first row
-        self._refresh_items() # Update and show menu items
+        self._refresh_items() # Update menu items
 
         while True:
 
@@ -46,10 +46,11 @@ class Menu:
         """
         self._stdscr.clear()  # Clear the screen before redrawing
         h, w = self._stdscr.getmaxyx()  # Get the height (h) and width (w) of the terminal window
+        longest_label = max([item.label for item in self._items], key=len)
+        x = w//2 - len(longest_label)//2  # Calculate x so text is centered horizontally
 
         # Loop through each menu item and print it
         for idx, item in enumerate(self._items):
-            x = w//2 - len(str(item.label))//2  # Calculate x so text is centered horizontally
             y = h//2 - len(self._items)//2 + idx  # Calculate y so the whole menu is vertically centered
 
             if idx == selected_row_idx: # Highlight the currently selected row (inverted colors)

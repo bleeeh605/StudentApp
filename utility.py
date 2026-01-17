@@ -13,6 +13,7 @@ class Student():
         self.lessons = lessons
 
 class LessonStatus(Enum):
+    DEMO = 0 # Pale blue
     PENDING = 1 # Purple / Lavender
     PAID = 2 # Pale green / Sage
     UNPAID = 11 # Red / Tomato
@@ -57,3 +58,15 @@ class ConnectionChecker():
             return True
         except Exception:
             return False
+        
+def set_terminal_size(rows=40, cols=120):
+    """
+    Set the terminal window size on macOS.
+    
+    rows: number of text rows
+    cols: number of text columns
+    """
+    # The escape sequence for resizing terminal
+    # \e[8;<rows>;<cols>t
+    sys.stdout.write(f"\033[8;{rows};{cols}t")
+    sys.stdout.flush()

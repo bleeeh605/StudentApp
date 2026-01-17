@@ -20,7 +20,11 @@ class PaymentManager():
         self._stdscr.refresh()
 
         if not ConnectionChecker.is_internet_connection_present():
-            self._display_connection_unaveilable(x, y)
+            self._display_unaveilability("connection", x, y)
+            return
+        
+        if not self._calendar.service_is_set_up():
+            self._display_unaveilability("calendar", x, y)
             return
         
         self._stdscr.addstr(y, x, "Doing an automated update for students. Please wait...")
@@ -32,10 +36,14 @@ class PaymentManager():
         update_text_strings = self._create_updated_students_texts(updated_students)
         self._show_update_text(update_text_strings, x, y)
 
-    def _display_connection_unaveilable(self, x: int, y: int) -> None:
+    def _display_unaveilability(self, case, x: int, y: int) -> None:
             self._stdscr.clear()  # Clear the screen before redrawing
-            self._stdscr.addstr(y + 1, x, "Connection could not be established. Check your internet connection if you want to use ")
-            self._stdscr.addstr(y + 2, x, "full program functionality. Press any key to continue...")
+            if case == "calendar":
+                self._stdscr.addstr(y + 1, x, "Calendar could not be initialized properly. Check your connection and restart the program ")
+                self._stdscr.addstr(y + 2, x, "if you want to use full program functionality. Press any key to continue...")
+            else:
+                self._stdscr.addstr(y + 1, x, "Connection could not be established. Check your internet connection if you want to use ")
+                self._stdscr.addstr(y + 2, x, "full program functionality. Press any key to continue...")
             self._stdscr.refresh()
             self._stdscr.getch()
 
@@ -44,25 +52,28 @@ class PaymentManager():
         # Get information for all students
         student_rows = self._data_base.get_students_info()
         now = datetime.now(ZoneInfo("Europe/Berlin"))
-        month_earlier = now.replace(hour=0, minute=0, second=0, microsecond=0) 
+        month_earlier = now.replace(hour=0, minute=0, second=0, microsecond=0)
         month_earlier = month_earlier + timedelta(days=-30)
         # For each student: Search for lessons with this student in the past month
         for student_row in student_rows:
-            id, name, lesson_price, advance_payment = student_row
+            student_id, name, lesson_price, advance_payment = student_row
             lessons = self._calendar.get_student_lessons_in_selected_period(name, month_earlier, now)
             # For each such lesson:
             for lesson in lessons:
                 # If lesson is not yet paid
-                if lesson.get("colorId") != str(LessonStatus.PAID.value):
+                color = lesson.get("colorId")
+                if color != str(LessonStatus.PAID.value):
+                    if color == str(LessonStatus.DEMO.value) or color is None:
+                        continue
                     # If their advance payment is enough to cover their lesson price
                     if advance_payment >= lesson_price:
                         # Reduce payment in advance and patch event and update data base
                         advance_payment -= lesson_price
                         # Mark lesson as paid
                         self._calendar.edit_event(lesson, color_id=str(LessonStatus.PAID.value))
-                        self._data_base.edit_student(student_id=id, student=Student(name=name, advance_payment=advance_payment))
+                        self._data_base.edit_student(student_id=student_id, student=Student(name=name, lesson_price=lesson_price, advance_payment=advance_payment))
                         updated_students.append((name, lesson, "paid"))
-                    elif lesson.get("colorId") != str(LessonStatus.UNPAID.value):
+                    elif color != str(LessonStatus.UNPAID.value):
                         # Otherwise mark lesson as unpaid
                         self._calendar.edit_event(lesson, color_id=str(LessonStatus.UNPAID.value))
                         updated_students.append((name, lesson, "unpaid"))

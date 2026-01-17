@@ -49,9 +49,14 @@ class CalendarManager():
                     self._credentials.refresh(Request())
                 else:
                     flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
-                    self._credentials = flow.run_local_server(port=8081,
-                                                            access_type="offline",  # important: gives you a refresh token)
-                                                            prompt="consent")       # important: forces Google to issue a refresh token even if previously authorized
+                    #TODO: Add retires?
+                    try:
+                        self._credentials = flow.run_local_server(port=8081,
+                                                                access_type="offline",  # important: gives you a refresh token)
+                                                                prompt="consent")       # important: forces Google to issue a refresh token even if previously authorized
+                    except Exception as e:
+                        print("Internet connection problems, login interrupted or browser closed:", e)
+                        return
                 # Save credentials
                 with open(token_path, "wb") as token:
                     pickle.dump(self._credentials, token)
@@ -68,10 +73,14 @@ class CalendarManager():
                 access_type="offline",
                 prompt="consent"
             )
+            
+            #temporary_path = token_path + ".tmp"
 
             # Save the new credentials token
             with open(token_path, "wb") as token:
                 pickle.dump(self._credentials, token)
+
+            #os.replace(temporary_path, token_path)
 
         if self._credentials and self._credentials.valid:
             self._service = build("calendar", "v3", credentials=self._credentials)
@@ -123,6 +132,11 @@ class CalendarManager():
                                                 orderBy='startTime').execute()
         events = events_result.get('items', [])
         return events
+    
+    def service_is_set_up(self):
+        if not self._service:
+            return False
+        return True
 
     def routine(self):
         local_timezone = ZoneInfo("Europe/Berlin")
@@ -168,7 +182,6 @@ class CalendarManager():
                 end = event['end'].get('dateTime', event['end'].get('date'))
                 if end < now.isoformat():
                     self._service.events().patch(calendarId='primary', eventId=event['id'], body={"colorId": "4"}).execute()
-
 
 class CalendarEvent:
 
