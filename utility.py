@@ -3,7 +3,9 @@ import os, sys
 import ssl, certifi
 import urllib.request
 import datetime
+from dataclasses import dataclass
 
+@dataclass
 class Student():
     def __init__(self, name, lesson_price=35, advance_payment=0, lesson_in_this_week=None, lessons=None):
         self.name = name
